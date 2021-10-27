@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31815.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonHelpers.Newstonsoft.Json", "CommonHelpers.Newstonsoft.Json\CommonHelpers.Newstonsoft.Json.csproj", "{DA374592-A5E4-4C99-B44E-0E7E31C39F2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0A7734E-B4B4-4783-B9EA-7B4E31C6C352}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C15267A9-6AEE-4BEB-8B7D-716AD40C1E6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonHelpers.Newstonsoft.Json.Tests", "CommonHelpers.Newstonsoft.Json.Tests\CommonHelpers.Newstonsoft.Json.Tests.csproj", "{D6138F80-137F-4B5D-90ED-55BF2CA190BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA374592-A5E4-4C99-B44E-0E7E31C39F2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA374592-A5E4-4C99-B44E-0E7E31C39F2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA374592-A5E4-4C99-B44E-0E7E31C39F2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA374592-A5E4-4C99-B44E-0E7E31C39F2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6138F80-137F-4B5D-90ED-55BF2CA190BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6138F80-137F-4B5D-90ED-55BF2CA190BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6138F80-137F-4B5D-90ED-55BF2CA190BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6138F80-137F-4B5D-90ED-55BF2CA190BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D6138F80-137F-4B5D-90ED-55BF2CA190BE} = {C15267A9-6AEE-4BEB-8B7D-716AD40C1E6B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {06F5B215-2561-47F7-A4CB-A90BAEBD1F4B}
+	EndGlobalSection
+EndGlobal
