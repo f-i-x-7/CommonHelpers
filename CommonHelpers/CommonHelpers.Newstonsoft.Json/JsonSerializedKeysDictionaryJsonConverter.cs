@@ -1,13 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace CommonHelpers.Newstonsoft.Json
 {
-    public sealed class JsonSerializedKeysDictionaryJsonConverter<TKey, TValue> : JsonConverter<JsonSerializedKeysDictionary<TKey, TValue>> where TKey : class
+    public class JsonSerializedKeysDictionaryJsonConverter<TDictionary, TKey, TValue> : JsonConverter<TDictionary>
+        where TDictionary : class, IDictionary<TKey, TValue>
+        where TKey : class
     {
-        public override JsonSerializedKeysDictionary<TKey, TValue>? ReadJson(JsonReader reader, Type objectType, JsonSerializedKeysDictionary<TKey, TValue>? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        private readonly Func<TDictionary>? _factory;
+        private readonly Func<int, TDictionary>? _factoryWithCapacity;
+
+        public JsonSerializedKeysDictionaryJsonConverter(Func<TDictionary> factory)
+        {
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        }
+
+        public JsonSerializedKeysDictionaryJsonConverter(Func<int, TDictionary> factoryWithCapacity)
+        {
+            _factoryWithCapacity = factoryWithCapacity ?? throw new ArgumentNullException(nameof(factoryWithCapacity));
+        }
+
+        public override TDictionary? ReadJson(JsonReader reader, Type objectType, TDictionary? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             if (reader.TokenType != JsonToken.StartObject)
             {
@@ -15,14 +31,23 @@ namespace CommonHelpers.Newstonsoft.Json
             }
 
             var objectJson = JObject.Load(reader).ToString();
-            var rawDictionary = JsonConvert.DeserializeObject<JsonSerializedKeysDictionary<string, TValue>>(objectJson);
+            var rawDictionary = JsonConvert.DeserializeObject<Dictionary<string, TValue>>(objectJson);
             if (rawDictionary is null)
                 return null;
 
             if (typeof(TKey) == typeof(string))
-                return (JsonSerializedKeysDictionary<TKey, TValue>)(object)rawDictionary;
+                return (TDictionary)(object)rawDictionary;
 
-            var result = new JsonSerializedKeysDictionary<TKey, TValue>(rawDictionary.Count);
+            TDictionary result;
+            if (_factoryWithCapacity is not null)
+            {
+                result = _factoryWithCapacity(rawDictionary.Count);
+            }
+            else
+            {
+                Debug.Assert(_factory is not null);
+                result = _factory!();
+            }
 
             foreach (var kvPair in rawDictionary)
             {
@@ -36,7 +61,7 @@ namespace CommonHelpers.Newstonsoft.Json
             return result;
         }
 
-        public override void WriteJson(JsonWriter writer, JsonSerializedKeysDictionary<TKey, TValue>? value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, TDictionary? value, JsonSerializer serializer)
         {
             if (value is null)
                 return;
