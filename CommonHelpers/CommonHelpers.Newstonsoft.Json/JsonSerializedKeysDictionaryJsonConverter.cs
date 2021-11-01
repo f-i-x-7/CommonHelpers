@@ -6,12 +6,45 @@ using Newtonsoft.Json.Linq;
 
 namespace CommonHelpers.Newstonsoft.Json
 {
+    /// <summary>
+    /// An implementation of <see cref="JsonConverter"/> that can be used for roundtrippable JSON serialization of objects implementing <see cref="IDictionary{TKey, TValue}"/> interface.
+    /// </summary>
+    /// <typeparam name="TDictionary">Dictionary type implementing <see cref="IDictionary{TKey, TValue}"/> interface.</typeparam>
+    /// <typeparam name="TKey">Type of <typeparamref cref="TDictionary"/> key.</typeparam>
+    /// <typeparam name="TValue">Type of <typeparamref name="TDictionary"/> value.</typeparam>
+    /// <remarks>
+    /// By default, Newtonsoft.Json serializes IDictionary keys of custom types via <see cref="object.ToString()"/> call. This means that for custom types result JSON could not be deserialized back.<br/>
+    /// This class serializes dictionary keys as JSON.
+    /// </remarks>
     public class JsonSerializedKeysDictionaryJsonConverter<TDictionary, TKey, TValue> : JsonConverter<TDictionary>
         where TDictionary : class, IDictionary<TKey, TValue>
-        where TKey : class
+        where TKey : class // this constraint reduces number of special-cases where default Newtonsoft.Json serialization should be performed just to string keys
     {
         private readonly Func<TDictionary>? _factory;
         private readonly Func<int, TDictionary>? _factoryWithCapacity;
+
+        public JsonSerializedKeysDictionaryJsonConverter()
+        {
+            var type = typeof(TDictionary);
+            if (type.IsInterface)
+            {
+                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                {
+                    // TDictionary is IDictionary<TKey, TValue>. Try to use Dictionary<TKey, TValue>, even its capacity constructor.
+                    _factoryWithCapacity = capacity => (TDictionary)(object)new Dictionary<TKey, TValue>(capacity);
+                }
+                else
+                {
+                    // Some more complicated interface. We cannot assume what type to use, and Activator.CreateInstance() will definitely fail later. So fail fast now.
+                    var message = $"This constructor cannot be used when {nameof(TDictionary)} is an interface other than IDictionary<TKey, TValue>. {nameof(TDictionary)} used: '{typeof(TDictionary).FullName}'.";
+                    throw new InvalidOperationException(message);
+                }
+            }
+            else
+            {
+                _factory = () => Activator.CreateInstance<TDictionary>();
+            }
+        }
 
         public JsonSerializedKeysDictionaryJsonConverter(Func<TDictionary> factory)
         {
