@@ -13,7 +13,8 @@ namespace CommonHelpers.Newstonsoft.Json
     /// <typeparam name="TKey">Type of <typeparamref cref="TDictionary"/> key.</typeparam>
     /// <typeparam name="TValue">Type of <typeparamref name="TDictionary"/> value.</typeparam>
     /// <remarks>
-    /// By default, Newtonsoft.Json serializes IDictionary keys of custom types via <see cref="object.ToString()"/> call. This means that for custom types result JSON could not be deserialized back.<br/>
+    /// By default, Newtonsoft.Json serializes IDictionary keys of custom types via <see cref="object.ToString()"/> call (see https://www.newtonsoft.com/json/help/html/SerializationGuide.htm#Breakdown).
+    /// This means that for custom types result JSON could not be deserialized back.<br/>
     /// This class serializes dictionary keys as JSON.
     /// </remarks>
     public class JsonSerializedKeysDictionaryJsonConverter<TDictionary, TKey, TValue> : JsonConverter<TDictionary>
