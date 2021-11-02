@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
@@ -21,6 +22,11 @@ namespace CommonHelpers.Newstonsoft.Json
         where TDictionary : class, IDictionary<TKey, TValue>
         where TKey : class // this constraint reduces number of special-cases where default Newtonsoft.Json serialization should be performed just to string keys
     {
+        private static TDictionary DictionaryFactoryWithCapacity(int capacity) => (TDictionary)(object)new Dictionary<TKey, TValue>(capacity);
+        private static TDictionary ConcurrentDictionaryFactoryWithCapacity(int capacity) => (TDictionary)(object)new ConcurrentDictionary<TKey, TValue>(Environment.ProcessorCount, capacity);
+        private static TDictionary SortedDictionaryFactory() => (TDictionary)(object)new SortedDictionary<TKey, TValue>();
+        private static TDictionary SortedListFactoryWithCapacity(int capacity) => (TDictionary)(object)new SortedList<TKey, TValue>(capacity);
+
         private readonly Func<TDictionary>? _factory;
         private readonly Func<int, TDictionary>? _factoryWithCapacity;
 
@@ -32,7 +38,7 @@ namespace CommonHelpers.Newstonsoft.Json
                 if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
                 {
                     // TDictionary is IDictionary<TKey, TValue>. Try to use Dictionary<TKey, TValue>, even its capacity constructor.
-                    _factoryWithCapacity = capacity => (TDictionary)(object)new Dictionary<TKey, TValue>(capacity);
+                    _factoryWithCapacity = DictionaryFactoryWithCapacity;
                 }
                 else
                 {
@@ -40,6 +46,23 @@ namespace CommonHelpers.Newstonsoft.Json
                     var message = $"This constructor cannot be used when {nameof(TDictionary)} is an interface other than IDictionary<TKey, TValue>. {nameof(TDictionary)} used: '{typeof(TDictionary).FullName}'.";
                     throw new InvalidOperationException(message);
                 }
+            }
+            // Hot-path for common dictionary types (because Activator.CreateInstance() is slow); use capacity-aware constructor where possible.
+            else if (type == typeof(Dictionary<TKey, TValue>))
+            {
+                _factoryWithCapacity = DictionaryFactoryWithCapacity;
+            }
+            else if (type == typeof(ConcurrentDictionary<TKey, TValue>))
+            {
+                _factoryWithCapacity = ConcurrentDictionaryFactoryWithCapacity;
+            }
+            else if (type == typeof(SortedDictionary<TKey, TValue>))
+            {
+                _factory = SortedDictionaryFactory;
+            }
+            else if (type == typeof(SortedList<TKey, TValue>))
+            {
+                _factoryWithCapacity = SortedListFactoryWithCapacity;
             }
             else
             {
